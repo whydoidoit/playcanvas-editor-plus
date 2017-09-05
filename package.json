@@ -7,7 +7,14 @@
         "start": "webpack-dev-server --https --hot",
         "production": "webpack --progress --colors --config webpack.production.config.js"
     },
-    "author": "Mike Talbot",
+    "author": {
+        "name": "Mike Talbot",
+        "email": "mtalbot@ixion.digital"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/whydoidoit/playcanvas-editor-plus.git"
+    },
     "license": "MIT",
     "devDependencies": {
         "babel-core": "^6.26.0",
