@@ -42,7 +42,7 @@ const Search = {
                         editor.call('selector:set', 'entity', entities)
                     })
                 }
-            }, "GO")
+            }, m('strong', "GO"))
         )
     }
 }
