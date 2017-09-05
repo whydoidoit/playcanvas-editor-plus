@@ -1,0 +1,41 @@
+# PlayCanvas Editor Plus
+
+A set of extensions for the PlayCanvas editor.  Implemented as a Google Chrome extension.
+
+## Features
+
+* Colour model view in the assets panel and preview window (no more grey shadows!)
+* See whole of asset name in the asset panel
+* Quickly select the Root node and collapse others
+* Quickly select the parent of an entity
+* Powerful search with RegEx, supports component names, entity names etc and returns all matches (unlike the normal hierarchy search)
+* Drop to root - enables items being dropped from the asset panel to be located at the position of the selected entity but then parented to the root - stops accidental creation of complicated deep structures when designing scenes
+* Snap to grid - snaps one or more entities that are already in the scene to the current grid interval - normal snapping in PlayCanvas does not round the existing position, but only move
+ items it by grid increments.
+* Snap Rotation - snaps the Y rotation of one or more entities to a 90 degree increment. Useful for laying out levels.  
+
+## Installation
+
+Clone the repo and run `npm install` in the root folder.
+
+## Usage
+
+For developing extensions to the plugin use:
+
+1. Use "chrome://extensions" in developer mode and "Load Unpacked Extension" from the "chrome-extension" folder. 
+2. run `npm start` in the root folder to start a webpack dev server which will serve the plugin files
+
+If you just want to use the plugin:
+
+Use "chrome://extensions" in developer mode and "Load Unpacked Extension" from the "production-extension" folder
+
+## Keyboard Shortcuts
+
+The plugin adds some shortcut keys:
+
+**T** - snap the current entity or entities to the snap increment
+
+**R** - select the root scene node (collapsing others)
+
+**U** - select the parent of the current entity (or the first entity selected)
+ 
