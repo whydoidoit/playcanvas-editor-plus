@@ -6,6 +6,7 @@
     "browser_action": {
         "default_title": "PlayCanvas"
     },
+    "author": "Ixion Digital",
     "background": {
         "scripts": []
     },

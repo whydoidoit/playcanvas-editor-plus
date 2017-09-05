@@ -2,3 +2,5 @@
 /build
 *.pem
 production-extension.pem
+
+production-extension.zip
