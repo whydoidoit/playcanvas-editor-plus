@@ -1,0 +1,29 @@
+{
+    "manifest_version": 2,
+    "name": "Playcanvas Extensions",
+    "description": "Add functions to Playcanvas Editor",
+    "version": "1.0",
+    "browser_action": {
+        "default_title": "PlayCanvas"
+    },
+    "background": {
+        "scripts": []
+    },
+    "permissions": [
+        "activeTab",
+        "storage",
+        "http://*/*",
+        "https://*/*"
+    ],
+    "content_scripts": [
+        {
+            "matches": [
+                "*://playcanvas.com/editor/*"
+            ],
+            "js": [
+                "playcanvas.js"
+            ],
+            "run_at": "document_end"
+        }
+    ]
+}
