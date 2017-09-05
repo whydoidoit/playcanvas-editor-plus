@@ -1,5 +1,5 @@
 .ui-overlay.bake-options > .content {
-  width: 290px;
+  width: 400px;
   height: initial;
   left: 50%;
   top: 50%;
@@ -40,6 +40,11 @@
 .ui-header.center {
   background-color: rgba(0,0,0,0.2);
   text-align: center;
+}
+
+.bake-options p, .bake-options em {
+  margin-left: 8px;
+  margin-right: 8px;
 }
 
 .right-aligned {
