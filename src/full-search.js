@@ -35,7 +35,8 @@ const Search = {
                         let entities = collect(root, [])
                             .filter(entity => {
                                 let regex = new RegExp(term, 'ig')
-                                let search = entity.get('name') + " " + map(entity.get('components'), (value, key) => key).join(' ')
+                                let search = entity.get('name') + " " + map(entity.get('components'), (value, key) => "=" + key).join(' ')
+                                search += map(entity.get('components.script'), (value,name)=>"#"+name).join(' ')
                                 return regex.test(search)
                             })
                         editor.call('selector:set', 'entity', entities)
