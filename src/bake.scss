@@ -1,0 +1,47 @@
+.ui-overlay.bake-options > .content {
+  width: 290px;
+  height: initial;
+  left: 50%;
+  top: 50%;
+  transform: translate3d(-50%, -50%, 0);
+}
+
+.ui-overlay.bake-options .ui-header .ui-panel {
+  background-color: rgba(0,0,0,0.2);
+  padding: 2px;
+}
+
+.ui-overlay.bake-options > .content > .ui-label {
+  display: block;
+}
+
+.ui-overlay.bake-options .label-field {
+  width: 40%;
+}
+
+.ui-overlay.bake-options .bake-button {
+  font-size: 14px;
+  height: 32px;
+  text-transform: uppercase;
+  line-height: 32px;
+  padding-left: 10px;
+  padding-right: 10px;
+  background-color: #e54d42;
+  border: none;
+  color: #fff;
+  margin: 4px 4px 8px 4px;
+}
+
+.bake-options hr {
+  color: rgba(0,0,0,0.3);
+  border-color: rgba(0,0,0,0.15);
+}
+
+.ui-header.center {
+  background-color: rgba(0,0,0,0.2);
+  text-align: center;
+}
+
+.right-aligned {
+  text-align: right
+}
