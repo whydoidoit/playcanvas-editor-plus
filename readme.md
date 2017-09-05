@@ -85,6 +85,11 @@ always bake meshes for static items, but you should be aware that this may
 significantly increase the number of triangles rendered and assess yourself whether
 your application is GPU or CPU bound.
 
+Baked meshes can be large.  You can bake meshes at runtime to get the same performance boost
+without downloading the files.  The choice here is between how long it will take to 
+bake the mesh at runtime compared to downloading a prepared mesh.  A runtime version
+of the mesh baker is included in the project source files.
+
 ## Searching
 
 The search tool searches entities in the current scene.  You can use regular expressions for searches.
