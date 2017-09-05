@@ -11,8 +11,9 @@ A set of extensions for the PlayCanvas editor.  Implemented as a Google Chrome e
 * Quickly select the parent of an entity
 * Powerful search with RegEx, supports component names, entity names etc and returns all matches (unlike the normal hierarchy search)
 * Drop to root - enables items being dropped from the asset panel to be located at the position of the selected entity but then parented to the root - stops accidental creation of complicated deep structures when designing scenes
-* Snap to grid - snaps one or more entities that are already in the scene to the current grid interval - normal snapping in PlayCanvas does not round the existing position, but only move
- items it by grid increments.
+* Snap to grid - snaps one or more entities that are already in the scene to
+ the current grid interval - normal snapping in PlayCanvas does not round
+ the existing position, but only moves items by grid increments.
 * Snap Rotation - snaps the Y rotation of one or more entities to a 90 degree increment. Useful for laying out levels.  
 
 
@@ -36,7 +37,7 @@ Use ***chrome://extensions*** in developer mode and "Load Unpacked Extension" in
 *In other browsers:*
 
 Host or otherwise insert the **production-extension/main.fn.build.js** into the editor 
-page and call `_inject()` or build the project insert **build/main.build.js** into the page.
+page and call `_inject()` or build the project and insert **build/main.build.js** into the page.
 
 ## Keyboard Shortcuts
 
@@ -61,7 +62,10 @@ A new asset is added to the project with the baked mesh and an entity is added t
 scene which uses this mesh.  Existing entities that were baked are disabled.
 
 Baking can take a while and the resulting model is automatically imported into
-PlayCanvas but this may take a while.
+PlayCanvas and this will take additional time, with the normal orange import progress
+bar showing at the bottom right of the window.  No new entities will be added and no
+entities disabled until this process is complete.  So don't leave the editor until
+it finishes.
 
 You can specify options for the resulting meshes - for instance their lightmapping
 and shadow settings.  You can also choose to ignore meshes with more than a 
