@@ -1,5 +1,5 @@
 {
-    "name": "playcanvas-editor-plus",
+    "name": "PlayCanvas Editor Plus",
     "version": "1.0.0",
     "description": "Plugin for Playcanvas Editor to add extra useful functions, like coloured model previews, more powerful entity search and others.",
     "main": "webpack.config.js",
