@@ -14,20 +14,26 @@ A set of extensions for the PlayCanvas editor.  Implemented as a Google Chrome e
  items it by grid increments.
 * Snap Rotation - snaps the Y rotation of one or more entities to a 90 degree increment. Useful for laying out levels.  
 
-## Installation
+
+## Installation
 
 Clone the repo and run `npm install` in the root folder.
 
 ## Usage
 
-For developing extensions to the plugin use:
+*For developing extensions to the plugin use:*
 
-1. Use "chrome://extensions" in developer mode and "Load Unpacked Extension" from the "chrome-extension" folder. 
+1. Use ***chrome://extensions*** in developer mode and "Load Unpacked Extension" in the **chrome-extension** folder. 
 2. run `npm start` in the root folder to start a webpack dev server which will serve the plugin files
 
-If you just want to use the plugin:
+*If you just want to use the plugin:*
 
-Use "chrome://extensions" in developer mode and "Load Unpacked Extension" from the "production-extension" folder
+Use ***chrome://extensions*** in developer mode and "Load Unpacked Extension" in the **production-extension** folder
+
+*In other browsers:*
+
+Host or otherwise insert the **production-extension/main.fn.build.js** into the editor 
+page and call `_inject()` or build the project insert **build/main.build.js** into the page.
 
 ## Keyboard Shortcuts
 
