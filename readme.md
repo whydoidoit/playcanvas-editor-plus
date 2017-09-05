@@ -25,6 +25,8 @@ Clone the repo and run `npm install` in the root folder.
 
 1. Use ***chrome://extensions*** in developer mode and "Load Unpacked Extension" in the **chrome-extension** folder. 
 2. run `npm start` in the root folder to start a webpack dev server which will serve the plugin files
+3. You will have to approve the self certified HTTPS server next. In a browser open ***https://localhost:8081/main.build.js*** and use the advanced
+tab to proceed to localhost.
 
 *If you just want to use the plugin:*
 

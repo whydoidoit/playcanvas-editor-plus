@@ -1,0 +1,26 @@
+0 info it worked if it ends with ok
+1 verbose cli [ '/Users/michaeltalbot/.nvm/versions/node/v7.2.1/bin/node',
+1 verbose cli   '/Users/michaeltalbot/.nvm/versions/node/v7.2.1/bin/npm',
+1 verbose cli   'start' ]
+2 info using npm@3.10.10
+3 info using node@v7.2.1
+4 verbose stack Error: Invalid name: "PlayCanvas Editor Plus"
+4 verbose stack     at ensureValidName (/Users/michaeltalbot/.nvm/versions/node/v7.2.1/lib/node_modules/npm/node_modules/normalize-package-data/lib/fixer.js:336:15)
+4 verbose stack     at Object.fixNameField (/Users/michaeltalbot/.nvm/versions/node/v7.2.1/lib/node_modules/npm/node_modules/normalize-package-data/lib/fixer.js:215:5)
+4 verbose stack     at /Users/michaeltalbot/.nvm/versions/node/v7.2.1/lib/node_modules/npm/node_modules/normalize-package-data/lib/normalize.js:32:38
+4 verbose stack     at Array.forEach (native)
+4 verbose stack     at normalize (/Users/michaeltalbot/.nvm/versions/node/v7.2.1/lib/node_modules/npm/node_modules/normalize-package-data/lib/normalize.js:31:15)
+4 verbose stack     at final (/Users/michaeltalbot/.nvm/versions/node/v7.2.1/lib/node_modules/npm/node_modules/read-package-json/read-json.js:349:5)
+4 verbose stack     at then (/Users/michaeltalbot/.nvm/versions/node/v7.2.1/lib/node_modules/npm/node_modules/read-package-json/read-json.js:124:5)
+4 verbose stack     at /Users/michaeltalbot/.nvm/versions/node/v7.2.1/lib/node_modules/npm/node_modules/read-package-json/read-json.js:311:12
+4 verbose stack     at /Users/michaeltalbot/.nvm/versions/node/v7.2.1/lib/node_modules/npm/node_modules/graceful-fs/graceful-fs.js:78:16
+4 verbose stack     at tryToString (fs.js:425:3)
+5 verbose cwd /Users/michaeltalbot/Documents/development/playcanvas-editor-plus
+6 error Darwin 16.7.0
+7 error argv "/Users/michaeltalbot/.nvm/versions/node/v7.2.1/bin/node" "/Users/michaeltalbot/.nvm/versions/node/v7.2.1/bin/npm" "start"
+8 error node v7.2.1
+9 error npm  v3.10.10
+10 error Invalid name: "PlayCanvas Editor Plus"
+11 error If you need help, you may report this error at:
+11 error     <https://github.com/npm/npm/issues>
+12 verbose exit [ 1, true ]
