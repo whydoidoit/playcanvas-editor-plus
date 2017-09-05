@@ -15,6 +15,16 @@ function snap() {
     })
 }
 
+function snapRotation() {
+    let items = editor.call('selector:items')
+    items.forEach(item => {
+        let rotation = item.get('rotation')
+        let sign = rotation[1] < 0 ? -1 : 1
+        rotation[1] = Math.round(Math.abs(rotation[1]) / 90) * 90 * sign
+        item.set('rotation', rotation)
+    })
+}
+
 const Snap = {
     view: function () {
         return [
@@ -24,15 +34,7 @@ const Snap = {
                 m('i.fa.fa-square'),
                 "Snap"
             ), m('span.ui-button', {
-                    onclick: function () {
-                        let items = editor.call('selector:items')
-                        items.forEach(item => {
-                            let rotation = item.get('rotation')
-                            let sign = rotation[1] < 0 ? -1 : 1
-                            rotation[1] = Math.round(Math.abs(rotation[1]) / 90) * 90 * sign
-                            item.set('rotation', rotation)
-                        })
-                    }
+                    onclick: snapRotation
                 },
                 m('i.fa.fa-circle'),
                 "Snap Rotation"
@@ -43,6 +45,11 @@ const Snap = {
 editor.call('hotkey:register', 'snap:grid', {
     key: 't',
     callback: snap
+});
+
+editor.call('hotkey:register', 'snap:rotation', {
+    key: 'g',
+    callback: snapRotation
 });
 
 
