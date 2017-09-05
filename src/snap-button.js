@@ -48,7 +48,7 @@ editor.call('hotkey:register', 'snap:grid', {
 });
 
 editor.call('hotkey:register', 'snap:rotation', {
-    key: 'g',
+    key: 'l',
     callback: snapRotation
 });
 

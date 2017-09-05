@@ -6,6 +6,7 @@ A set of extensions for the PlayCanvas editor.  Implemented as a Google Chrome e
 
 * Colour model view in the assets panel and preview window (no more grey shadows!)
 * See whole of asset name in the asset panel
+* Bake together meshes to reduce draw calls and improve performance
 * Quickly select the Root node and collapse others
 * Quickly select the parent of an entity
 * Powerful search with RegEx, supports component names, entity names etc and returns all matches (unlike the normal hierarchy search)
@@ -46,4 +47,58 @@ The plugin adds some shortcut keys:
 **R** - select the root scene node (collapsing others)
 
 **U** - select the parent of the current entity (or the first entity selected)
+
+**G** - activate the search window
+
+## Baking Meshes
+
+The plugin allows you to bake together meshes to save draw calls and improve performance.
+
+You select one or more entities in the tree and then they and their children are combined based
+on the materials used in their meshes.
+
+A new asset is added to the project with the baked mesh and an entity is added to the
+scene which uses this mesh.  Existing entities that were baked are disabled.
+
+Baking can take a while and the resulting model is automatically imported into
+PlayCanvas but this may take a while.
+
+You can specify options for the resulting meshes - for instance their lightmapping
+and shadow settings.  You can also choose to ignore meshes with more than a 
+vertex limit you specify. You get the biggest performance improvements when you
+bake many meshes with few vertices, but you can also leave this option turned off if
+you prefer and just bake everything.
+
+There is a limit on the number of vertices in a mesh of 62,000.  If the number of
+vertices exceeds this a second mesh is automatically created and added as a 
+further mesh instance.  This process is repeated so there is no practical limit.
+
+### Downsides of baking
+
+Baking meshes may end up messing with culling and having more triangles drawn than if
+they weren't baked.  This is a CPU/GPU balancing issue.  In general I pretty much
+always bake meshes for static items, but you should be aware that this may 
+significantly increase the number of triangles rendered and assess yourself whether
+your application is GPU or CPU bound.
+
+## Searching
+
+The search tool searches entities in the current scene.  You can use regular expressions for searches.
+
+The entities are searched by name, components attached and the names of scripts.  If
+you need to differentiate between them then you can prepend a special character - but
+this must then be followed by the start of the name, script or component.
+
+* **:** Name of the entity. *e.g. :player*
+* **=** Name of the component. *e.g. =collision*
+* **#** Name of the script. *e.g. #follow*
+
+### History
+
+v1.1
+
+* Added Bake for meshes
+* Improved selectivity of search terms with # : and =
+* Added a checkbox to specify search scope
+* Search has a hot key and reacts to ENTER 
  
