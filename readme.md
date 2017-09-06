@@ -104,6 +104,14 @@ this must then be followed by the start of the name, script or component.
 
 ### History
 
+v1.1.2
+
+* Fixed a bug with searching for Scripts 2.0 scripts
+
+v1.1.1 
+
+* Fixed a CSS bug with the assets window
+
 v1.1
 
 * Added Bake for meshes

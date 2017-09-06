@@ -24,7 +24,7 @@ function search() {
                 let search = ":" + entity.get('name') + " " + map(entity.get('components'), (value, key) => "=" + key).join(' ')
                 let scriptComponent = entity.get('components.script')
                 if (scriptComponent) {
-                    search += " " + map(scriptComponent.scripts, script => "#" + script.name).join(' ')
+                    search += " " + map(scriptComponent.scripts, (script,name) => "#" + (script.name || name)).join(' ')
                 }
                 return regex.test(search)
             })
