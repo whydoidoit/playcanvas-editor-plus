@@ -1,11 +1,12 @@
 import add from 'ui-container'
 import m from 'mithril'
+import settings from 'settings'
 
 let active = false
 
 const Dropping = {
     view: function () {
-        return m('span.ui-button', {
+        return settings.enabled.dropToRoot === false ? null : m('span.ui-button', {
                 class: active ? 'active' : '',
                 onclick: function () {
                     active = !active

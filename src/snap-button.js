@@ -1,6 +1,6 @@
 import m from 'mithril'
 import add from 'ui-container'
-
+import settings from 'settings'
 
 
 function snap() {
@@ -27,7 +27,7 @@ function snapRotation() {
 
 const Snap = {
     view: function () {
-        return [
+        return settings.enabled.snapButtons === false ? null : [
             m('span.ui-button', {
                     onclick: snap
                 },

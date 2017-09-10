@@ -1,5 +1,6 @@
 import add from 'ui-container'
 import m from 'mithril'
+import settings from 'settings'
 
 function selectRoot() {
     editor.call('selector:clear')
@@ -31,7 +32,7 @@ function goUp() {
 
 const Root = {
     view: function () {
-        return [
+        return settings.enabled.rootButton === false ? null : [
             m('span.ui-button', {
                     onclick: selectRoot
                 },

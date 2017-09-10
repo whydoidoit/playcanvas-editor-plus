@@ -2,10 +2,11 @@ import add from 'ui-container'
 import m from 'mithril'
 import './bake.scss'
 import combine from 'mesh-combiner/editor'
+import settings from 'settings'
 
 const Bake = {
     view: function () {
-        return m('span.ui-button', {
+        return settings.enabled.bakeButton === false ? null : m('span.ui-button', {
                 onclick: bake
             },
             m('i.fa.fa-birthday-cake'),
@@ -102,6 +103,7 @@ const Options = {
 
 let overlay = Options.overlay = new ui.Overlay();
 overlay.class.add('bake-options');
+overlay.class.add('ixion');
 overlay.hidden = true;
 
 let root = editor.call('layout.root');

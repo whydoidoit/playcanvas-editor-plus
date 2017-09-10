@@ -2,6 +2,7 @@ import add from 'ui-container'
 import m from 'mithril'
 import map from 'lodash/map'
 import collect from 'collect'
+import settings from 'settings'
 
 let term = ''
 let global = true
@@ -21,10 +22,10 @@ function search() {
         let entities = collect(root, [])
             .filter(entity => {
                 let regex = new RegExp(term, 'ig')
-                let search = ":" + entity.get('name') + " " + map(entity.get('components'), (value, key) => "=" + key).join(' ')
+                let search = ":" + entity.get('name') + "@ " + map(entity.get('components'), (value, key) => "=" + key + "@").join(' ')
                 let scriptComponent = entity.get('components.script')
                 if (scriptComponent) {
-                    search += " " + map(scriptComponent.scripts, (script,name) => "#" + (script.name || name)).join(' ')
+                    search += " " + map(scriptComponent.scripts, (script,name) => "#" + (script.name || name) +"@").join(' ')
                 }
                 return regex.test(search)
             })
@@ -34,7 +35,7 @@ function search() {
 
 const Search = {
     view: function () {
-        return m('span.ui-ixion',
+        return settings.enabled.searchButtons === false ? null : m('span.ui-ixion',
             m('i.fa.fa-search'),
             m('input.field.right-space', {
                 placeholder: "Search for :name or =component or #scriptname",

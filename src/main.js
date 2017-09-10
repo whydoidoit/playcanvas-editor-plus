@@ -1,5 +1,6 @@
 import 'babel-polyfill'
 import 'ui-container'
+import './settings-button'
 import './full-search'
 import './snap-button'
 import './root-button'

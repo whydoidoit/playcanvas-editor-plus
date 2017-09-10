@@ -12,23 +12,48 @@ module.exports = {
         filename: '[name].build.js',
         publicPath: '/'
     },
-    plugins: [new UglifyJSPlugin({
-        mangle: true,
-        extractComments: true,
-        compress: true
-    }), new BundleAsAFunction({
-        files: {
-            'main.build.js': '../production-extension/main.fn.build.js'
-        }
-    })],
+    plugins: [
+        new webpack.HotModuleReplacementPlugin({}),
+        new webpack.optimize.ModuleConcatenationPlugin(),
+        new webpack.optimize.UglifyJsPlugin(),
+        new BundleAsAFunction({
+            files: {
+                'main.build.js': '../production-extension/main.fn.build.js'
+            }
+        }),
+        new webpack.BannerPlugin({
+            banner: `
+Copyright (C) 2017 Mike Talbot (Ixion Digital)
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is furnished
+to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION 
+OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+`
+        })
+
+    ],
     devtool: 'none',
     module: {
         loaders: [{
             test: /\.js$/,
-            exclude: [/node_modules/, "/node_modules"],
+            include: /\/src/,
             loader: 'babel-loader',
             query: {
-                presets: ['ES2017']
+                cacheDirectory: true,
+                presets: ['es2015']
             }
         }, {
             test: /\.scss$/,

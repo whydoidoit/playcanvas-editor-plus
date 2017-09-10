@@ -1,4 +1,4 @@
-.ui-overlay.bake-options > .content {
+.ui-overlay.ixion > .content {
   width: 400px;
   height: initial;
   left: 50%;
@@ -6,20 +6,24 @@
   transform: translate3d(-50%, -50%, 0);
 }
 
-.ui-overlay.bake-options .ui-header .ui-panel {
+.ui-overlay.ixion .ui-header .ui-panel {
   background-color: rgba(0,0,0,0.2);
   padding: 2px;
 }
 
-.ui-overlay.bake-options > .content > .ui-label {
+.ui-overlay.ixion > .content > .ui-label {
   display: block;
 }
 
-.ui-overlay.bake-options .label-field {
-  width: 40%;
+.ui-overlay.ixion .label-field {
+  width: 40% !important;
 }
 
-.ui-overlay.bake-options .bake-button {
+.ui-overlay.ixion.settings .label-field {
+  width: 80% !important;
+}
+
+.ui-overlay.ixion .bake-button {
   font-size: 14px;
   height: 32px;
   text-transform: uppercase;
@@ -32,7 +36,7 @@
   margin: 4px 4px 8px 4px;
 }
 
-.bake-options hr {
+.ixion hr {
   color: rgba(0,0,0,0.3);
   border-color: rgba(0,0,0,0.15);
 }
@@ -42,7 +46,7 @@
   text-align: center;
 }
 
-.bake-options p, .bake-options em {
+.ixion p, .ixion em {
   margin-left: 8px;
   margin-right: 8px;
 }

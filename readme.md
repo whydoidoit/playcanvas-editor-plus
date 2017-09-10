@@ -102,7 +102,21 @@ this must then be followed by the start of the name, script or component.
 * **=** Name of the component. *e.g. =collision*
 * **#** Name of the script. *e.g. #follow*
 
+You can follow a search term with an @ to indicate that there should be no more characters in the match. 
+e.g. :man@ searches for entities that are called 'man' but will omit 'manual' etc. 
+
 ### History
+
+v1.1.4
+
+* Fixed a few faults in the CSS - especially buttons in the properties window
+* Added a settings dialog to configure which buttons are displayed by default
+
+v1.1.3
+
+* Added an @ symbol after search terms (name, component, script) to enable searching for exact matches
+
+> *e.g. #blend@ searches for all entities that have a script called 'blend' but not 'blender' etc*
 
 v1.1.2
 
