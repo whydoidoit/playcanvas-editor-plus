@@ -4,6 +4,7 @@ A set of extensions for the PlayCanvas editor.  Implemented as a Google Chrome e
 
 ## Features
 
+* Copy and Paste components and scripts between entities
 * Colour model view in the assets panel and preview window (no more grey shadows!)
 * See whole of asset name in the asset panel
 * Bake together meshes to reduce draw calls and improve performance
@@ -39,6 +40,10 @@ Use ***chrome://extensions*** in developer mode and "Load Unpacked Extension" in
 Host or otherwise insert the **production-extension/main.fn.build.js** into the editor 
 page and call `_inject()` or build the project and insert **build/main.build.js** into the page.
 
+## Copy & Paste
+
+When you select an entity there will be an extra panel in the Inspector that lets you select the components and scripts you want to copy.  Check the box next to each and then press the `Copy` button.  Now select the target entity and the box will show which things can be pasted.  You can't paste a component or script that already exists, so they will not appear (delete the existing ones if you want to overwrite them).
+
 ## Keyboard Shortcuts
 
 The plugin adds some shortcut keys:
@@ -55,57 +60,41 @@ The plugin adds some shortcut keys:
 
 The plugin allows you to bake together meshes to save draw calls and improve performance.
 
-You select one or more entities in the tree and then they and their children are combined based
-on the materials used in their meshes.
+You select one or more entities in the tree and then they and their children are combined based on the materials used in their meshes.
 
-A new asset is added to the project with the baked mesh and an entity is added to the
-scene which uses this mesh.  Existing entities that were baked are disabled.
+A new asset is added to the project with the baked mesh and an entity is added to the scene which uses this mesh.  Existing entities that were baked are disabled.
 
-Baking can take a while and the resulting model is automatically imported into
-PlayCanvas and this will take additional time, with the normal orange import progress
-bar showing at the bottom right of the window.  No new entities will be added and no
-entities disabled until this process is complete.  So don't leave the editor until
-it finishes.
+Baking can take a while and the resulting model is automatically imported into PlayCanvas and this will take additional time, with the normal orange import progress bar showing at the bottom right of the window.  No new entities will be added and no entities disabled until this process is complete.  So don't leave the editor until it finishes.
 
-You can specify options for the resulting meshes - for instance their lightmapping
-and shadow settings.  You can also choose to ignore meshes with more than a 
-vertex limit you specify. You get the biggest performance improvements when you
-bake many meshes with few vertices, but you can also leave this option turned off if
-you prefer and just bake everything.
+You can specify options for the resulting meshes - for instance their lightmapping and shadow settings.  You can also choose to ignore meshes with more than a  vertex limit you specify. You get the biggest performance improvements when you bake many meshes with few vertices, but you can also leave this option turned off if you prefer and just bake everything.
 
-There is a limit on the number of vertices in a mesh of 62,000.  If the number of
-vertices exceeds this a second mesh is automatically created and added as a 
-further mesh instance.  This process is repeated so there is no practical limit.
+There is a limit on the number of vertices in a mesh of 62,000.  If the number of vertices exceeds this a second mesh is automatically created and added as a  further mesh instance.  This process is repeated so there is no practical limit.
 
 ### Downsides of baking
 
-Baking meshes may end up messing with culling and having more triangles drawn than if
-they weren't baked.  This is a CPU/GPU balancing issue.  In general I pretty much
-always bake meshes for static items, but you should be aware that this may 
-significantly increase the number of triangles rendered and assess yourself whether
-your application is GPU or CPU bound.
+Baking meshes may end up messing with culling and having more triangles drawn than if they weren't baked.  This is a CPU/GPU balancing issue.  In general I pretty much always bake meshes for static items, but you should be aware that this may  significantly increase the number of triangles rendered and assess yourself whether your application is GPU or CPU bound.
 
-Baked meshes can be large.  You can bake meshes at runtime to get the same performance boost
-without downloading the files.  The choice here is between how long it will take to 
-bake the mesh at runtime compared to downloading a prepared mesh.  A runtime version
-of the mesh baker is included in the project source files.
+Baked meshes can be large.  You can bake meshes at runtime to get the same performance boost without downloading the files.  The choice here is between how long it will take to  bake the mesh at runtime compared to downloading a prepared mesh.  A runtime version of the mesh baker is included in the project source files.
 
 ## Searching
 
 The search tool searches entities in the current scene.  You can use regular expressions for searches.
 
-The entities are searched by name, components attached and the names of scripts.  If
-you need to differentiate between them then you can prepend a special character - but
-this must then be followed by the start of the name, script or component.
+The entities are searched by name, components attached and the names of scripts.  If you need to differentiate between them then you can prepend a special character - but this must then be followed by the start of the name, script or component.
 
 * **:** Name of the entity. *e.g. :player*
 * **=** Name of the component. *e.g. =collision*
 * **#** Name of the script. *e.g. #follow*
 
 You can follow a search term with an @ to indicate that there should be no more characters in the match. 
+
 e.g. :man@ searches for entities that are called 'man' but will omit 'manual' etc. 
 
 ### History
+
+v1.2
+
+* Copy & Paste for scripts and components
 
 v1.1.4
 

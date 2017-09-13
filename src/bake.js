@@ -15,7 +15,7 @@ const Bake = {
 }
 
 const Options = {
-    state: {numberOfVertices: 0, castShadows: true, receiveShadows: true, lightmapped: false, lightmapSizeMultiplier: 16},
+    state: {numberOfVertices: 0,   castShadows: true, receiveShadows: true, lightmapped: false, lightmapSizeMultiplier: 16},
     view: function () {
         return [
             m('header.ui-header', m('.ui-panel.noHeader', "BAKE OPTIONS")),
