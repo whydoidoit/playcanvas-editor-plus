@@ -13,6 +13,7 @@ let call = Promise.promisify(editor.call.bind(editor))
 
 let selected
 let buffer = ""
+let isPasting = false
 
 //Wait for a short period
 function shortDelay(duration) {
@@ -78,6 +79,7 @@ const SKIP = [
     'region',
     'source_asset_id',
     'path',
+    'meta',
     'tags',
     'task',
     'preload',
@@ -345,164 +347,180 @@ function uploadFile(data) {
     })
 }
 
+function pastingUnloadEventHandler(e) {
+    return e.returnValue = "Paste operation in progress, please stay!"
+}
+
 async function paste() {
-    let gh = getHash
+    try {
 
-    //Map all existing assets
-    let hashed = {}
-    let mapped = {}
+        let sceneRoot = !selected || !selected.length ? editor.call('entities:root') : selected[0]
 
-    let scanned = {
-        entities: {},
-        assets: {},
-        roots: [],
-        hashedAssets: {}
-    }
-    let definition = JSON.parse(buffer)
+        window.addEventListener('beforeunload', pastingUnloadEventHandler)
+        isPasting = true
+        m.redraw()
+        let gh = getHash
 
-    function updateAssetList() {
-        let existing = editor.call("assets:list")
-        collect(existing, scanned, scanned.roots)
-        hashed = scanned.hashedAssets
+        //Map all existing assets
+        let hashed = {}
+        let mapped = {}
+
+        let scanned = {
+            entities: {},
+            assets: {},
+            roots: [],
+            hashedAssets: {}
+        }
+        let definition = JSON.parse(buffer)
+
+        function updateAssetList() {
+            let existing = editor.call("assets:list")
+            collect(existing, scanned, scanned.roots)
+            hashed = scanned.hashedAssets
+            for (var key in definition.hashedAssets) {
+                if (hashed[key]) {
+                    mapped[key] = hashed[key]
+                }
+            }
+        }
+
+        updateAssetList()
+
+        let toLoad = []
+        //Get a list of assets to load in order of their
+        //requirement
         for (var key in definition.hashedAssets) {
             if (hashed[key]) {
                 mapped[key] = hashed[key]
-            }
-        }
-    }
-
-    updateAssetList()
-
-    let toLoad = []
-    //Get a list of assets to load in order of their
-    //requirement
-    for (var key in definition.hashedAssets) {
-        if (hashed[key]) {
-            mapped[key] = hashed[key]
-        } else {
-
-            let data = definition.hashedAssets[key]
-            data._key = key
-            if (toLoad.indexOf(data) === -1) toLoad.push(data)
-            let required = data._hashedContents = getAllHashed(data)
-            required.forEach(r => {
-                if (toLoad.findIndex(l => l._hashed === r.hash) === -1) {
-                    toLoad.unshift(definition.hashedAssets[r.hash])
-                }
-            })
-
-        }
-    }
-    //toLoad contains a list of assets to be created
-    for (let i = 0; i < toLoad.length; i++) {
-        let item = toLoad[i]
-
-        //Create an asset
-        // update any references etc
-        if (item._hashedContents) {
-            item._hashedContents.forEach(ref => {
-                ref.ref[ref.key] = +mapped[ref.hash].id
-            })
-        }
-
-        if (hashed[item._key]) {
-            mapped[item._key] = hashed[item._key]
-            continue
-        }
-
-        //Make the asset
-        let assetId, asset
-        if(item.type !== 'animation') {
-            if (item.file) {
-                let results = await xhr(item.file.url, {method: 'GET', responseType: 'blob'})
-                let assetData = await uploadFile({
-                    name: item.name,
-                    type: item.type,
-                    meta: item.meta,
-                    source: false,
-                    preload: true,
-                    pipeline: true,
-                    data: item.data,
-                    parent: editor.call('assets:panel:currentFolder'),
-                    filename: item.file.filename,
-                    file: results.body //
-                })
-                assetId = assetData.asset.id
-                await shortDelay(500)
-                asset = await retrieveAsset(assetId)
-
             } else {
-                assetId = await call("assets:create", {
-                    name: item.name,
-                    type: item.type,
-                    meta: item.meta,
-                    source: false,
-                    preload: true,
-                    scope: {
-                        type: 'project',
-                        id: config.project.id
-                    },
-                    data: item.data,
-                    parent: editor.call('assets:panel:currentFolder'),
-                })
-                asset = await retrieveAsset(assetId)
-            }
-            mapped[item._key] = asset.json()
-        } else {
-            do {
-                updateAssetList()
-                await shortDelay(1000)
-            } while(!hashed[item._key])
 
-        }
-
-
-    }
-    let entityMap = {}
-    let sceneRoot = !selected || !selected.length ? editor.call('entities:root') : selected[0]
-    let fixUpList = []
-
-    function recurseCreateEntity(def, parent) {
-        let entity = editor.call('entities:new', {
-            parent
-        })
-        let required = getAllHashed(def.def)
-        required.forEach(r => r.ref[r.key] = mapped[r.hash].id)
-        entity.set('name', def.def.name)
-
-        map(def.def.components, (value, key) => {
-            entity.set('components.' + key, value)
-        })
-        if (def.def.components.script) {
-            fixUpList.push(entity.get('components.script'))
-        }
-        entity.set('position', def.def.position)
-        entity.set('rotation', def.def.rotation)
-        entity.set('scale', def.def.scale)
-        entity.set('enabled', def.def.enabled)
-        entityMap[def.def.resource_id] = entity.get('resource_id')
-        def.children.forEach(child => {
-            recurseCreateEntity(child, entity)
-        })
-    }
-
-
-    //Lets start making entities
-    definition.roots.forEach(root => {
-        recurseCreateEntity(root, sceneRoot)
-    })
-
-    fixUpList.forEach(script => {
-        map(script.scripts, (script, name) => {
-            map(script.attributes, (attribute, attrName) => {
-                if (isString(attribute) && attribute.length > 24) {
-                    if (entityMap[attribute]) {
-                        script.attributes[attrName] = entityMap[attribute]
+                let data = definition.hashedAssets[key]
+                data._key = key
+                if (toLoad.indexOf(data) === -1) toLoad.push(data)
+                let required = data._hashedContents = getAllHashed(data)
+                required.forEach(r => {
+                    if (toLoad.findIndex(l => l._hashed === r.hash) === -1) {
+                        toLoad.unshift(definition.hashedAssets[r.hash])
                     }
+                })
+
+            }
+        }
+        //toLoad contains a list of assets to be created
+        for (let i = 0; i < toLoad.length; i++) {
+            let item = toLoad[i]
+
+            //Create an asset
+            // update any references etc
+            if (item._hashedContents) {
+                item._hashedContents.forEach(ref => {
+                    ref.ref[ref.key] = +mapped[ref.hash].id
+                })
+            }
+
+            if (hashed[item._key]) {
+                mapped[item._key] = hashed[item._key]
+                continue
+            }
+
+            //Make the asset
+            let assetId, asset
+            if (item.type !== 'animation') {
+                if (item.file) {
+                    let results = await xhr(item.file.url, {method: 'GET', responseType: 'blob'})
+                    let assetData = await uploadFile({
+                        name: item.name,
+                        type: item.type,
+                        meta: item.meta,
+                        source: false,
+                        preload: true,
+                        pipeline: true,
+                        data: item.data,
+                        parent: editor.call('assets:panel:currentFolder'),
+                        filename: item.file.filename,
+                        file: results.body //
+                    })
+                    assetId = assetData.asset.id
+                    await shortDelay(500)
+                    asset = await retrieveAsset(assetId)
+
+                } else {
+                    assetId = await call("assets:create", {
+                        name: item.name,
+                        type: item.type,
+                        meta: item.meta,
+                        source: false,
+                        preload: true,
+                        scope: {
+                            type: 'project',
+                            id: config.project.id
+                        },
+                        data: item.data,
+                        parent: editor.call('assets:panel:currentFolder'),
+                    })
+                    asset = await retrieveAsset(assetId)
                 }
+                mapped[item._key] = asset.json()
+            } else {
+                do {
+                    updateAssetList()
+                    await shortDelay(1000)
+                } while (!hashed[item._key])
+
+            }
+
+
+        }
+        let entityMap = {}
+        let fixUpList = []
+
+        function recurseCreateEntity(def, parent) {
+            let entity = editor.call('entities:new', {
+                parent
+            })
+            let required = getAllHashed(def.def)
+            required.forEach(r => r.ref[r.key] = mapped[r.hash].id)
+            entity.set('name', def.def.name)
+
+            map(def.def.components, (value, key) => {
+                entity.set('components.' + key, value)
+            })
+            if (def.def.components.script) {
+                fixUpList.push(entity.get('components.script'))
+            }
+            entity.set('position', def.def.position)
+            entity.set('rotation', def.def.rotation)
+            entity.set('scale', def.def.scale)
+            entity.set('enabled', def.def.enabled)
+            entityMap[def.def.resource_id] = entity.get('resource_id')
+            def.children.forEach(child => {
+                recurseCreateEntity(child, entity)
+            })
+
+        }
+
+
+        //Lets start making entities
+        definition.roots.forEach(root => {
+            recurseCreateEntity(root, sceneRoot)
+        })
+
+        fixUpList.forEach(script => {
+            map(script.scripts, (script, name) => {
+                map(script.attributes, (attribute, attrName) => {
+                    if (isString(attribute) && attribute.length > 24) {
+                        if (entityMap[attribute]) {
+                            script.attributes[attrName] = entityMap[attribute]
+                        }
+                    }
+                })
             })
         })
-    })
+    } finally {
+        isPasting = false
+        m.redraw()
+        window.removeEventListener('beforeunload', pastingUnloadEventHandler)
+    }
 
 }
 
@@ -523,7 +541,7 @@ function clearBuffer() {
 
 const CopyButton = {
     view: function () {
-        return [
+        return isPasting ? m('span.warning.ui-button', "PASTE OPERATION IN PROGRESS...") : [
             !selected ? null : m('span.ui-button', {
                     onclick: copy
                 },

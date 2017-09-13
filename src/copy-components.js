@@ -171,7 +171,8 @@ editor.on('attributes:inspect[entity]', function (entities) {
         entity.on('*:unset', build)
         entity.on('*:insert', build)
         entity.on('*:remove', build)
-        editor.on('attributes:inspect[entity]', function () {
+        editor.once('attributes:inspect[entity]', function () {
+            if(!entity || !entity.off) return
             entity.off('*:set', build)
             entity.off('*:unset', build)
             entity.off('*:insert', build)
