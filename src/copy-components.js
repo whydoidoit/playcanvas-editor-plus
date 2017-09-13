@@ -9,12 +9,8 @@ import debounce from 'lodash/debounce'
 
 let copyBuffer = {components: {}, scripts: {}, entity: null}
 
-function isSet(obj) {
-    return some(obj, (v, c) => v)
-}
-
 editor.on('attributes:inspect[entity]', function (entities) {
-    if (entities.length == 1) {
+    if (entities.length > 0) {
         function performCopy() {
             copyBuffer = {components: {}, scripts: {}, entity}
             map(copy.components, (copy, name) => {
@@ -29,25 +25,26 @@ editor.on('attributes:inspect[entity]', function (entities) {
         }
 
         function performPaste() {
-            map(paste.components, (paste, name) => {
-                if (!paste) return
-                // editor.call('entities:addComponent', [entity], name)
-                entity.set('components.' + name, pasteBuffer.components[name])
-                delete pasteBuffer.components[name]
-            })
-            if (isSet(paste.scripts)) {
-                if (!entity.get('components.script')) {
-                    editor.call('entities:addComponent', [entity], 'script')
+            entities.forEach(function(entity) {
+                map(paste.components, (paste, name) => {
+                    if (!paste) return
+                    // editor.call('entities:addComponent', [entity], name)
+                    entity.set('components.' + name, pasteBuffer.components[name])
+                })
+                if (isSet(paste.scripts)) {
+                    if (!entity.get('components.script')) {
+                        editor.call('entities:addComponent', [entity], 'script')
+                    }
                 }
-            }
-            map(paste.scripts, (paste, name) => {
-                if (!paste) return
-                entity.set('components.script.scripts.' + name, pasteBuffer.scripts[name])
-                entity.insert('components.script.order', name, entity.get('components.script.order').length);
-                delete pasteBuffer.scripts[name]
+                map(paste.scripts, (paste, name) => {
+                    if (!paste) return
+                    entity.set('components.script.scripts.' + name, JSON.parse(JSON.stringify(pasteBuffer.scripts[name])))
+                    entity.insert('components.script.order', name, entity.get('components.script.order').length);
+                })
             })
 
         }
+
         let scriptComponent = {}
         let entity = entities[0]
         let components = []
@@ -69,7 +66,7 @@ editor.on('attributes:inspect[entity]', function (entities) {
         copyPanel.append(replace)
         let CopyComponents = {
             view: function () {
-                return [
+                return [entities.length === 1 ? [
                     (!isEmpty(components) || !isEmpty(scripts)) ? m('.ui-panel', m('header.ui-header', m('span.title', "COPY"))) : null,
                     components.map(c =>
                         m('.ui-panel.noHeader.field-checkbox', {onclick: () => (copy.components[c] = !copy.components[c])},
@@ -94,8 +91,9 @@ editor.on('attributes:inspect[entity]', function (entities) {
                         )
                     ),
                     isSet(copy.scripts) || isSet(copy.components) ?
-                        m('.ui-button.full-width.centered-text', {onclick: performCopy}, "Copy") : null,
-                    entity !== pasteBuffer.entity && (!isEmpty(pasteBuffer.scripts) || !isEmpty(pasteBuffer.components)) ? [
+                        m('.ui-button.full-width.centered-text', {onclick: performCopy}, "Copy") : null
+                ] : null,
+                    entities.filter(e => e !== pasteBuffer.entity).length > 0 && (!isEmpty(pasteBuffer.scripts) || !isEmpty(pasteBuffer.components)) ? [
                         [
 
                             m('.ui-panel', m('header.ui-header', m('span.title', "PASTE")))
@@ -134,7 +132,6 @@ editor.on('attributes:inspect[entity]', function (entities) {
 
         var build = debounce(function build() {
             panel.hidden = true
-            if (isEmpty(entity.get('components')) && isEmpty(copyBuffer.components) && isEmpty(copyBuffer.scripts)) return
 
             let data = entities[0].json()
             scriptComponent = data.components.script
@@ -148,9 +145,21 @@ editor.on('attributes:inspect[entity]', function (entities) {
 
 
             pasteBuffer = merge({}, copyBuffer)
-            components.forEach(c => delete pasteBuffer.components[c])
-            scripts.forEach(c => delete pasteBuffer.scripts[c])
+            entities.forEach(function(entity) {
+                let data = entity.json()
+                scriptComponent = data.components.script
+                delete data.components.script
+                components = map(data.components, (_, name) => {
+                    return name
+                })
+                scripts = scriptComponent ? map(scriptComponent.scripts, (_, name) => {
+                    return name
+                }) : []
+                components.forEach(c => delete pasteBuffer.components[c])
+                scripts.forEach(c => delete pasteBuffer.scripts[c])
+            })
 
+            if (isEmpty(entity.get('components')) && isEmpty(copyBuffer.components) && isEmpty(copyBuffer.scripts) && !isSet(pasteBuffer.components) && !isSet(pasteBuffer.scripts)) return
             map(pasteBuffer.components, (_, n) => paste.components[n] = true)
             map(pasteBuffer.scripts, (_, n) => paste.scripts[n] = true)
             panel.hidden = false
@@ -162,7 +171,7 @@ editor.on('attributes:inspect[entity]', function (entities) {
         entity.on('*:unset', build)
         entity.on('*:insert', build)
         entity.on('*:remove', build)
-        editor.on('attributes:inspect[entity]', function (entities) {
+        editor.on('attributes:inspect[entity]', function () {
             entity.off('*:set', build)
             entity.off('*:unset', build)
             entity.off('*:insert', build)
@@ -173,4 +182,14 @@ editor.on('attributes:inspect[entity]', function (entities) {
     }
 
 })
+
+function shortDelay(duration) {
+    return new Promise(function (resolve) {
+        setTimeout(resolve, duration || 10)
+    })
+}
+
+function isSet(obj) {
+    return some(obj, v => !!v)
+}
 
