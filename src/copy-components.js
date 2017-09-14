@@ -71,7 +71,7 @@ editor.on('attributes:inspect[entity]', function (entities) {
                     components.map(c =>
                         m('.ui-panel.noHeader.field-checkbox', {onclick: () => (copy.components[c] = !copy.components[c])},
                             m('content.flex',
-                                m('span.ui-label.label-field.component', m('i.fa.fa-circle'), c),
+                                m('span.ui-label.label-field.component', m('i.fa.fa-circle.warning'), c),
                                 m('.ui-checkbox.noSelect.tick', {
                                         class: copy.components[c] ? 'checked' : ''
                                     }
@@ -82,7 +82,7 @@ editor.on('attributes:inspect[entity]', function (entities) {
                     scripts.map(c =>
                         m('.ui-panel.noHeader.field-checkbox', {onclick: () => (copy.scripts[c] = !copy.scripts[c])},
                             m('content.flex',
-                                m('span.ui-label.label-field', m('i.fa.fa-file-code-o'), c),
+                                m('span.ui-label.label-field', m('i.fa.fa-file-code-o.warning'), c),
                                 m('.ui-checkbox.noSelect.tick', {
                                         class: copy.scripts[c] ? 'checked' : ''
                                     }
@@ -101,7 +101,7 @@ editor.on('attributes:inspect[entity]', function (entities) {
                         map(pasteBuffer.components, (_, c) =>
                             m('.ui-panel.noHeader.field-checkbox', {onclick: () => (paste.components[c] = !paste.components[c])},
                                 m('content.flex',
-                                    m('span.ui-label.label-field.component', m('i.fa.fa-circle'), c),
+                                    m('span.ui-label.label-field.component', m('i.fa.fa-circle.warning'), c),
                                     m('.ui-checkbox.noSelect.tick', {
                                             class: paste.components[c] ? 'checked' : ''
                                         }
@@ -112,7 +112,7 @@ editor.on('attributes:inspect[entity]', function (entities) {
                         map(pasteBuffer.scripts, (_, c) =>
                             m('.ui-panel.noHeader.field-checkbox', {onclick: () => (paste.scripts[c] = !paste.scripts[c])},
                                 m('content.flex',
-                                    m('span.ui-label.label-field', m('i.fa.fa-file-code-o'), c),
+                                    m('span.ui-label.label-field', m('i.fa.fa-file-code-o.warning'), c),
                                     m('.ui-checkbox.noSelect.tick', {
                                             class: paste.scripts[c] ? 'checked' : ''
                                         }

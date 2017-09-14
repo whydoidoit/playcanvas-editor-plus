@@ -58,9 +58,11 @@ function sharedWorkerCode() {
 }
 
 function makeNumber(value) {
+    if(Array.isArray(value)) return undefined
     if (isNumber(value)) {
         return value
     }
+    if(!isString(value)) return undefined
     let result = parseInt(value)
     if (isNaN(result)) return undefined
     return result
@@ -77,10 +79,10 @@ const SKIP = [
     'user_id',
     'revision',
     'region',
-    'source_asset_id',
     'path',
     'meta',
     'tags',
+    'source_asset_id',
     'task',
     'preload',
     'variants',
@@ -140,6 +142,9 @@ function tryToGetAsset(id, definition, start, key, scan) {
         scan(value)
         value._hashed = getHash(value)
         if(value._hashed) {
+            if(definition.hashedAssets[value._hashed] && defintion.hashedAssets[value._hashed].id !== value.id) {
+                debugger
+            }
             definition.hashedAssets[value._hashed] = value
             start[key] = {hash: value._hashed, _map: true}
         }
@@ -174,6 +179,7 @@ function getAssetsFrom(item, definition, scriptMap) {
             }
         } else if (isObject(start)) {
             for (var key in start) {
+                if(key === 'id') continue
                 // if (SKIP.indexOf(key) !== -1) continue
                 let value = start[key]
 
@@ -348,6 +354,7 @@ function uploadFile(data) {
 }
 
 function pastingUnloadEventHandler(e) {
+    e.preventDefault()
     return e.returnValue = "Paste operation in progress, please stay!"
 }
 
@@ -390,6 +397,10 @@ async function paste() {
         //Get a list of assets to load in order of their
         //requirement
         for (var key in definition.hashedAssets) {
+            let item = definition.hashedAssets[key]
+            if(item.source_asset_id && !isObject(item.source_asset_id)) {
+                item.source_asset_id = null
+            }
             if (hashed[key]) {
                 mapped[key] = hashed[key]
             } else {
@@ -425,7 +436,7 @@ async function paste() {
 
             //Make the asset
             let assetId, asset
-            if (item.type !== 'animation') {
+            if (item.type !== 'animation' && !item.source_asset_id) {
                 if (item.file) {
                     let results = await xhr(item.file.url, {method: 'GET', responseType: 'blob'})
                     let assetData = await uploadFile({
@@ -464,6 +475,17 @@ async function paste() {
             } else {
                 do {
                     updateAssetList()
+                    if(!hashed[item._key]) {
+                        for(var key in hashed) {
+                            let existing = hashed[key]
+                            if(existing.type === item.type && existing.name === item.name) {
+                                hashed[item._key] = existing
+                            }
+                        }
+
+
+                    }
+
                     await shortDelay(1000)
                 } while (!hashed[item._key])
 
@@ -473,8 +495,8 @@ async function paste() {
         }
         let entityMap = {}
         let fixUpList = []
-
         function recurseCreateEntity(def, parent) {
+
             let entity = editor.call('entities:new', {
                 parent
             })

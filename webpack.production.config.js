@@ -49,11 +49,10 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     module: {
         loaders: [{
             test: /\.js$/,
-            include: /\/src/,
             loader: 'babel-loader',
             query: {
-                cacheDirectory: true,
-                presets: ['es2015']
+                cacheDirectory: false,
+                presets: ['es2015', 'es2017']
             }
         }, {
             test: /\.scss$/,

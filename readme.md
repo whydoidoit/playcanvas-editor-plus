@@ -4,6 +4,7 @@ A set of extensions for the PlayCanvas editor.  Implemented as a Google Chrome e
 
 ## Features
 
+* Downsize textures with a high quality resample.
 * Copy and Paste components and scripts between entities
 * Colour model view in the assets panel and preview window (no more grey shadows!)
 * See whole of asset name in the asset panel
@@ -43,6 +44,12 @@ page and call `_inject()` or build the project and insert **build/main.build.js*
 ## Copy & Paste
 
 When you select an entity there will be an extra panel in the Inspector that lets you select the components and scripts you want to copy.  Check the box next to each and then press the `Copy` button.  Now select the target entity and the box will show which things can be pasted.  You can't paste a component or script that already exists, so they will not appear (delete the existing ones if you want to overwrite them).
+
+## Downsize Textures
+
+When you select a texture asset a new panel will appear in the inspector allowing you to choose a size to which you would like to resize the image.  You may also choose to replace references to the current texture with the new one.
+
+New texture files are created with a name of "Resized_XXXX_OLD_FILE_NAME" they are also tagged as "Resized" and the size to which they were resized.
 
 ## Keyboard Shortcuts
 
@@ -91,6 +98,10 @@ You can follow a search term with an @ to indicate that there should be no more 
 e.g. :man@ searches for entities that are called 'man' but will omit 'manual' etc. 
 
 ### History
+
+v1.3
+
+* Added texture downsizing
 
 v1.2
 
