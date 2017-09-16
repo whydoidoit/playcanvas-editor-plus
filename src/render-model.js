@@ -1,5 +1,7 @@
-var app = editor.call('viewport:app');
+import debounce from 'lodash/debounce'
 
+
+var app = editor.call('viewport:app');
 var device = app.graphicsDevice;
 var renderer = app.renderer;
 var scene = editor.call('preview:scene');
@@ -7,7 +9,7 @@ var scene = editor.call('preview:scene');
 var pitch = -15;
 var yaw = 45;
 
-var white = new pc.Color(1,1,1,1)
+var white = new pc.Color(1, 1, 1, 1)
 // material
 var standardMaterial = new pc.StandardMaterial();
 standardMaterial.useSkybox = false;
@@ -27,6 +29,17 @@ var cubemapPrefiltered = [
     'prefilteredCubeMap4'
 ];
 
+function awaitAsset(id) {
+    return new Promise(resolve => {
+        let asset = pc.app.assets.get(id)
+        if (asset) {
+            asset.ready(resolve)
+        }
+        else {
+            resolve()
+        }
+    })
+}
 
 var aabb = new pc.BoundingBox();
 
@@ -70,8 +83,112 @@ camera.farClip = 32;
 camera.clearColor = [41 / 255, 53 / 255, 56 / 255, 0.0];
 camera.frustumCulling = false;
 
-function getMaterial(id) {
-    if(materialLookup[id]) return materialLookup[id]
+async function prepMaterial(id) {
+    if (materialLookup[id]) return materialLookup[id]
+    let asset = editor.call('assets:get', id)
+    if (!asset) return standardMaterial
+    var data = asset.get('data');
+    if (!data) return standardMaterial
+    let material = new pc.StandardMaterial()
+    // update material
+    for (var key in mapping) {
+        var value = data.hasOwnProperty(key) ? data[key] : mapping[key].default;
+
+
+        switch (mapping[key].type) {
+            case 'boolean':
+            case 'string':
+            case 'int':
+            case 'float':
+            case 'number':
+                material[key] = value;
+                break;
+            case 'vec2':
+                material[key].set(value[0], value[1]);
+                break;
+            case 'rgb':
+            case 'vec3':
+                material[key].set(value[0], value[1], value[2]);
+                break;
+            case 'cubemap':
+                if (value) {
+                    // TODO
+                    // handle async
+                    var textureAsset = await awaitAsset(value);
+                    if (textureAsset) {
+                        if (textureAsset.resource) {
+                            material[key] = textureAsset.resource;
+                        } else {
+                            material[key] = null;
+                        }
+
+                        if (textureAsset.file && textureAsset.resources && textureAsset.resources.length === 7) {
+                            for (var i = 0; i < 6; i++)
+                                material[cubemapPrefiltered[i]] = textureAsset.resources[i + 1];
+                        } else {
+                            for (var i = 0; i < 6; i++)
+                                material[cubemapPrefiltered[i]] = null;
+                        }
+
+                        textureAsset.loadFaces = true;
+                        app.assets.load(textureAsset);
+                    } else {
+                        material[key] = null;
+                        for (var i = 0; i < 6; i++)
+                            material[cubemapPrefiltered[i]] = null;
+                    }
+                } else {
+                    material[key] = null;
+                    for (var i = 0; i < 6; i++)
+                        material[cubemapPrefiltered[i]] = null;
+                }
+                break;
+            case 'texture':
+                if (value) {
+                    // TODO
+                    // handle async
+                    var textureAsset = await awaitAsset(value);
+                    if (textureAsset) {
+                        if (textureAsset.resource) {
+                            material[key] = textureAsset.resource;
+                        } else {
+                            app.assets.load(textureAsset);
+                            material[key] = null;
+                        }
+                    } else {
+                        material[key] = null;
+                    }
+                } else {
+                    material[key] = null;
+                }
+                break;
+            case 'object':
+                switch (key) {
+                    case 'cubeMapProjectionBox':
+                        if (value) {
+                            if (material.cubeMapProjectionBox) {
+                                material.cubeMapProjectionBox.center.set(0, 0, 0);
+                                material.cubeMapProjectionBox.halfExtents.set(value.halfExtents[0], value.halfExtents[1], value.halfExtents[2]);
+                            } else {
+                                material.cubeMapProjectionBox = new pc.BoundingBox(new pc.Vec3(0, 0, 0), new pc.Vec3(value.halfExtents[0], value.halfExtents[1], value.halfExtents[2]));
+                            }
+                        } else {
+                            material.cubeMapProjectionBox = null;
+                        }
+                        break;
+                }
+                break;
+        }
+    }
+
+    material.shadingModel = mappingShading[data.shader];
+    material.update();
+    materialLookup[id] = material
+    return material
+}
+
+function getMaterialSync(id) {
+    if (materialLookup[id]) return materialLookup[id]
     let asset = editor.call('assets:get', id)
     if (!asset) return standardMaterial
     var data = asset.get('data');
@@ -174,6 +291,12 @@ function getMaterial(id) {
     return material
 }
 
+let redoQueue = new Set
+
+function isLoaded(id) {
+    return !!materialLookup[id]
+}
+
 editor._hooks['preview:model:render'] = function (asset, target, args) {
     args = args || {};
 
@@ -187,8 +310,22 @@ editor._hooks['preview:model:render'] = function (asset, target, args) {
     if (!modelAsset) return;
 
     var model = modelPlaceholder;
-    var materials = data.mapping.filter(f=>f.material).map(mapping=>getMaterial(mapping.material))
+    var materials = []
+    for (let i = 0; i < data.mapping.length; i++) {
+        let material
+        if (!isLoaded(data.mapping[i].material)) {
+            redoQueue.add(asset)
+            redo()
+            material = standardMaterial
+            materials.push(material)
+            break
+        } else {
+            material = getMaterialSync(data.mapping[i].material)
+        }
 
+        materials.push(material)
+    }
+    if (!materials.length) return
     if (modelAsset._editorPreviewModel)
         model = modelAsset._editorPreviewModel.clone();
 
@@ -237,16 +374,51 @@ editor._hooks['preview:model:render'] = function (asset, target, args) {
 
     camera.farClip = max * 5.0;
 
-    light.intensity = (1.0 / (Math.min(1.0, scene.exposure) || 0.01))*2.8;
+    light.intensity = (1.0 / (Math.min(1.0, scene.exposure) || 0.01)) * 2.8;
     light.color = white;
 
     renderer.render(scene, camera);
 
     scene.removeModel(model);
+    if(model !== modelPlaceholder) {
+        model.destroy()
+    }
 
-    if (model !== modelPlaceholder)
-        model.destroy();
+
 };
+
+async function prep() {
+    let assetIndex = document.querySelector('.ui-grid.assets').ui.assetsIndex
+    for (var id in assetIndex) {
+        let asset = assetIndex[id]
+        let info = asset.asset.json()
+        if (info.type === 'model') {
+            for (let i = 0; i < info.data.mapping.length; i++) {
+                await prepMaterial(info.data.mapping[i].material)
+            }
+        }
+        asset.thumbnail.changed = true
+    }
+    editor.emit('preview:scene:changed')
+}
+
+setTimeout(prep, 100)
+
+var redo = debounce(async function () {
+    let assetIndex = document.querySelector('.ui-grid.assets').ui.assetsIndex
+    await Array.from(redoQueue).map(async asset => {
+        let info = asset.json()
+        if (info.type === 'model') {
+            for (let i = 0; i < info.data.mapping.length; i++) {
+                await prepMaterial(info.data.mapping[i].material)
+            }
+        }
+        assetIndex[info.id].thumbnail.changed = true
+    })
+    redoQueue.clear()
+    editor.emit('preview:scene:changed')
+}, 250)
+
 
 function nextPow2(size) {
     return Math.pow(2, Math.ceil(Math.log(size) / Math.log(2)));

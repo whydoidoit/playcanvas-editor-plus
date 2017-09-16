@@ -4,8 +4,10 @@ A set of extensions for the PlayCanvas editor.  Implemented as a Google Chrome e
 
 ## Features
 
+* Decimate models right in the asset window
 * Downsize textures with a high quality resample.
 * Copy and Paste components and scripts between entities
+* Copy and Paste **between projects** (experimental)
 * Colour model view in the assets panel and preview window (no more grey shadows!)
 * See whole of asset name in the asset panel
 * Bake together meshes to reduce draw calls and improve performance
@@ -41,9 +43,31 @@ Use ***chrome://extensions*** in developer mode and "Load Unpacked Extension" in
 Host or otherwise insert the **production-extension/main.fn.build.js** into the editor 
 page and call `_inject()` or build the project and insert **build/main.build.js** into the page.
 
-## Copy & Paste
+## Copy & Paste Components
 
 When you select an entity there will be an extra panel in the Inspector that lets you select the components and scripts you want to copy.  Check the box next to each and then press the `Copy` button.  Now select the target entity and the box will show which things can be pasted.  You can't paste a component or script that already exists, so they will not appear (delete the existing ones if you want to overwrite them).
+
+## Copy & Paste Between Projects (Experimental)
+
+When you select one or more entities in the scene or the hierarchy a copy button will appear on the Ixion toolbar. Press this, then open your other project in a different tab and then press the paste button.
+
+Clicking paste will:
+
+* Import all missing assets from the other project including models, scripts, animations, sounds and textures etc
+* Create the same hierarchy in your new project assigning all of the correct components
+* If an asset already exists it should be used and not re-imported
+
+**This may all take some time.  You may see duplicated items appearing during the operation, they should be cleared up at the end.**
+
+## Mesh Decimator - LOD level creator
+
+The mesh decimator allows you to reduce the number of faces in your models to optimise them or create LODs (Levels Of Detail) to use when the item is far from the camera.  
+
+When you select a model in the assets window, a new panel will appear in the Inspector called DECIMATE.  You can select the target triangle count with a slider and then hit the "Decimate" button.  This may take some time, an overlay will show you that it is working.
+
+The decimator *will* hit it's target goal of triangles - but that may not be a good idea for your mesh.  Experiment with different settings for different meshes and make sure you review the model from a variety of angles and ranges before deciding to use it.
+
+Decimator outputs models with millimeter precision to reduce the file size. This means you should get a good download speed improvement from just re-saving the model using Decimate with no face removal at all - presuming you can live with millimeter accuracy.
 
 ## Downsize Textures
 
@@ -98,6 +122,12 @@ You can follow a search term with an @ to indicate that there should be no more 
 e.g. :man@ searches for entities that are called 'man' but will omit 'manual' etc. 
 
 ### History
+
+v1.4
+
+* Added copy and paste between projects
+* Added mesh decimation
+* Fixed a bug in colour assets
 
 v1.3
 

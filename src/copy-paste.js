@@ -58,11 +58,11 @@ function sharedWorkerCode() {
 }
 
 function makeNumber(value) {
-    if(Array.isArray(value)) return undefined
+    if (Array.isArray(value)) return undefined
     if (isNumber(value)) {
         return value
     }
-    if(!isString(value)) return undefined
+    if (!isString(value)) return undefined
     let result = parseInt(value)
     if (isNaN(result)) return undefined
     return result
@@ -107,6 +107,11 @@ function removeIds(key, value) {
 //Get the hash of an object
 function getHash(object) {
     return sha1(JSON.stringify(object, removeIds))
+    // let hash = object.type + ":" + object.name + ":"
+    // if(object.file) {
+    //     hash += object.file.hash + ":"
+    // }
+    // return hash
 }
 
 let copyBufferWorker = new SharedWorker(convertToString(sharedWorkerCode))
@@ -131,7 +136,7 @@ function tryToGetAsset(id, definition, start, key, scan) {
     //Do we already have it
     if (definition.assets[id]) {
         let value = definition.assets[id]
-        if(value._hashed) {
+        if (value._hashed) {
             start[key] = {hash: value._hashed, _map: true}
         }
         return value
@@ -141,10 +146,7 @@ function tryToGetAsset(id, definition, start, key, scan) {
         definition.assets[id] = value = value.json()
         scan(value)
         value._hashed = getHash(value)
-        if(value._hashed) {
-            if(definition.hashedAssets[value._hashed] && defintion.hashedAssets[value._hashed].id !== value.id) {
-                debugger
-            }
+        if (value._hashed) {
             definition.hashedAssets[value._hashed] = value
             start[key] = {hash: value._hashed, _map: true}
         }
@@ -154,7 +156,7 @@ function tryToGetAsset(id, definition, start, key, scan) {
 }
 
 function handleScripts(scriptComponent, scriptMap, definition) {
-    if(config.project.settings.useLegacyScripts) return false
+    if (config.project.settings.useLegacyScripts) return false
     map(scriptComponent.scripts, (_, key) => {
         definition.hashedAssets[getHash(scriptMap[key])] = scriptMap[key]
     })
@@ -163,12 +165,15 @@ function handleScripts(scriptComponent, scriptMap, definition) {
 
 
 function getAssetsFrom(item, definition, scriptMap) {
+    if (item.type !== 'animation') {
+        item.source_asset_id = null
+    }
 
     function scan(start) {
         if (!start) return start
         if (Array.isArray(start)) {
             for (let i = 0; i < start.length; i++) {
-                if(makeNumber(start[i])) {
+                if (makeNumber(start[i])) {
                     let result = tryToGetAsset(start[i], definition, start, i, scan)
                     if (result && result._hashed) {
                         start[i] = {hash: result._hashed, _map: true}
@@ -179,12 +184,12 @@ function getAssetsFrom(item, definition, scriptMap) {
             }
         } else if (isObject(start)) {
             for (var key in start) {
-                if(key === 'id') continue
+                if (key === 'id') continue
                 // if (SKIP.indexOf(key) !== -1) continue
                 let value = start[key]
 
                 if (key === 'script') {
-                    if(!handleScripts(value, scriptMap, definition)) continue
+                    if (!handleScripts(value, scriptMap, definition)) continue
                 }
                 if (makeNumber(value)) {
                     let result = tryToGetAsset(value, definition, start, key, scan)
@@ -301,52 +306,12 @@ async function retrieveAsset(id) {
     return asset
 }
 
-function convertScene(asset) {
-    return new Promise(function(resolve) {
-
-        asset.on('task:set', checkRunning)
-        asset.on('taskInfo:set', checkRunning)
-        asset.on('taskInfo:unset', checkRunning)
-
-        function checkRunning() {
-            let status = asset.get('task')
-            console.log(asset.get('taskInfo'))
-            if (status != 'running') {
-                resolve()
-                asset.off('task:set', checkRunning)
-                asset.off('taskInfo:set', checkRunning)
-                asset.off('taskInfo:unset', checkRunning)
-            }
-        }
-
-    }).then(function() {
-        if (asset.get('meta.animation.available')) {
-            editor.call('assets:jobs:convert', asset)
-        }
-        return new Promise(function (resolve) {
-            asset.on('task:set', checkRunning)
-            asset.on('taskInfo:set', checkRunning)
-            asset.on('taskInfo:unset', checkRunning)
-
-            function checkRunning() {
-                let status = asset.get('task')
-                console.log(asset.get('taskInfo'))
-                if (status != 'running') {
-                    resolve()
-                    asset.off('task:set', checkRunning)
-                    asset.off('taskInfo:set', checkRunning)
-                    asset.off('taskInfo:unset', checkRunning)
-                }
-            }
-        })
-    })
-}
 
 function uploadFile(data) {
-    return new Promise(function(resolve, reject) {
+    return new Promise(function (resolve, reject) {
 
-        editor.call('assets:uploadFile', data, (err, data)=>{
-            if(err) reject(err)
+        editor.call('assets:uploadFile', data, (err, data) => {
+            if (err) reject(err)
             resolve(data)
         })
 
@@ -356,6 +321,22 @@ function uploadFile(data) {
 function pastingUnloadEventHandler(e) {
     e.preventDefault()
     return e.returnValue = "Paste operation in progress, please stay!"
+}
+
+async function waitForTasks(asset) {
+    let id = asset.id
+    asset = editor.call('assets:get', id)
+    console.log("Start Waiting")
+    let task = null
+    do {
+        await shortDelay(100)
+        try {
+            task = asset.get('task')
+        } catch (e) {
+
+        }
+    } while (!editor.call('assets:list').filter(a => a.get('source_asset_id') == id).length && !task)
+    console.log("Finished Waiting")
 }
 
 async function paste() {
@@ -394,11 +375,13 @@ async function paste() {
         updateAssetList()
 
         let toLoad = []
+        let toDelete = []
         //Get a list of assets to load in order of their
         //requirement
         for (var key in definition.hashedAssets) {
             let item = definition.hashedAssets[key]
-            if(item.source_asset_id && !isObject(item.source_asset_id)) {
+            if (item.source_asset_id && !isObject(item.source_asset_id)) {
+                console.warn("Missing source asset", item.source_asset_id, item)
                 item.source_asset_id = null
             }
             if (hashed[key]) {
@@ -417,6 +400,8 @@ async function paste() {
 
             }
         }
+
+        // return
         //toLoad contains a list of assets to be created
         for (let i = 0; i < toLoad.length; i++) {
             let item = toLoad[i]
@@ -425,6 +410,15 @@ async function paste() {
             // update any references etc
             if (item._hashedContents) {
                 item._hashedContents.forEach(ref => {
+                    //We believe the asset exists
+                    if (!mapped[ref.hash]) {
+                        for (var key in hashed) {
+                            let existing = hashed[key]
+                            if (existing.type === item.type && existing.name === item.name) {
+                                mapped[ref.hash] = hashed[ref.hash] = existing
+                            }
+                        }
+                    }
                     ref.ref[ref.key] = +mapped[ref.hash].id
                 })
             }
@@ -436,14 +430,29 @@ async function paste() {
 
             //Make the asset
             let assetId, asset
-            if (item.type !== 'animation' && !item.source_asset_id) {
+            if (item.type !== 'animation') {
                 if (item.file) {
-                    let results = await xhr(item.file.url, {method: 'GET', responseType: 'blob'})
-                    let assetData = await uploadFile({
-                        name: item.name,
+                    let results
+                    if (item.type == 'model') {
+                        let download = await xhr(item.file.url, {
+                            method: 'GET'
+                        })
+                        results = JSON.parse(download.body)
+                        if (results.model.nodes.length > 10 && results.model.nodes[0].scale[0] == 1) {
+                            results.model.nodes[0].scale = [0.01, 0.01, 0.01]
+                            results.model.nodes[1].scale = results.model.nodes[1].scale.map(v => v * 100)
+                            results.model.nodes[1].position = results.model.nodes[1].position.map(v => v * 100)
+                            results.body = new Blob([JSON.stringify(results)], {type: "application/json"})
+                        }
+                    } else {
+                        results = await xhr(item.file.url, {method: 'GET', responseType: 'blob'})
+                    }
+                    let assetData
+                    assetData = await uploadFile({
+                        name: item.source ? item.file.filename : item.name,
                         type: item.type,
                         meta: item.meta,
-                        source: false,
+                        source: item.source,
                         preload: true,
                         pipeline: true,
                         data: item.data,
@@ -451,16 +460,21 @@ async function paste() {
                         filename: item.file.filename,
                         file: results.body //
                     })
-                    assetId = assetData.asset.id
-                    await shortDelay(500)
-                    asset = await retrieveAsset(assetId)
 
+                    assetId = assetData.asset.id
+                    if (item.source && item.type === 'scene') {
+                        await waitForTasks(assetData.asset)
+                    }
+                    asset = await retrieveAsset(assetId)
+                    if (item.source) {
+                        toDelete.push(asset)
+                    }
                 } else {
                     assetId = await call("assets:create", {
                         name: item.name,
                         type: item.type,
                         meta: item.meta,
-                        source: false,
+                        source: item.source,
                         preload: true,
                         scope: {
                             type: 'project',
@@ -475,26 +489,38 @@ async function paste() {
             } else {
                 do {
                     updateAssetList()
-                    if(!hashed[item._key]) {
-                        for(var key in hashed) {
+                    if (!hashed[item._key]) {
+                        for (var key in hashed) {
                             let existing = hashed[key]
-                            if(existing.type === item.type && existing.name === item.name) {
-                                hashed[item._key] = existing
+                            if (existing.type === item.type && (existing.name === item.name || existing.name === item.name + ".json")) {
+                                mapped[item._key] = hashed[item._key] = existing
                             }
                         }
 
 
                     }
 
-                    await shortDelay(1000)
+                    await shortDelay(100)
                 } while (!hashed[item._key])
 
             }
 
 
         }
+
+        let allDelete = []
+        toDelete.forEach(a => {
+            editor.call('assets:list').filter(asset => asset.get('source_asset_id') == a.get('id') && asset.get('type') !== 'animation').forEach(asset => {
+                allDelete.push(asset)
+            })
+        })
+
+        editor.call('assets:delete', allDelete)
+        editor.call('assets:delete', toDelete)
+
         let entityMap = {}
         let fixUpList = []
+
         function recurseCreateEntity(def, parent) {
 
             let entity = editor.call('entities:new', {
