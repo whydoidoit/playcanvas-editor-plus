@@ -2,11 +2,14 @@ import m from 'mithril'
 import decimate from 'decimator'
 import MeshCreator from 'editor-mesh-creator'
 import Accessor from 'decimator/accessor'
+import map from 'lodash/map'
 import validTypes from 'vertex-valid-types'
 import './decimate.scss'
 
+let precision = 1000
+
 function round(v) {
-    return Math.round(v * 1000) / 1000
+    return Math.round(v * precision) / precision
 }
 
 const Overlay = {
@@ -74,7 +77,18 @@ editor.on('attributes:inspect[asset]', function (assets) {
                 if (!maxTriangles || maxTriangles < 10) return
                 let minTriangles = Math.floor(maxTriangles * 0.25)
                 let currentTriangles = maxTriangles
-
+                let meshLevels = {}
+                let numMeshes = 0
+                let advanced = false
+                let model = pc.app.assets.get(asset.id)._editorPreviewModel.clone()
+                model.meshInstances.forEach(instance => {
+                    numMeshes++
+                    meshLevels[instance.node.name] = {
+                        maxTriangles: instance.mesh.primitive[0].count,
+                        currentTriangles: instance.mesh.primitive[0].count,
+                        minTriangles: Math.floor((instance.mesh.primitive[0].count) / 5)
+                    }
+                })
                 async function runDecimation() {
                     try {
                         overlay.hidden = false
@@ -117,7 +131,7 @@ editor.on('attributes:inspect[asset]', function (assets) {
                             let blendIndices = vertices.blendIndices.data
                             let blendWeights = vertices.blendWeight.data
                             newMesh.vertices = vertices.$id
-                            let faces = Math.floor((i.mesh.primitive[0].count / (maxTriangles * 3)) * currentTriangles)
+                            let faces = advanced ? meshLevels[i.node.name].currentTriangles : Math.floor((i.mesh.primitive[0].count / (maxTriangles * 3)) * currentTriangles)
                             let mesh = decimate(faces, i)
                             let vb = mesh.vertexBuffer
                             let locked = vb.lock()
@@ -223,6 +237,17 @@ editor.on('attributes:inspect[asset]', function (assets) {
                                 onclick: e => e.stopPropagation(),
                                 onmouseup: e => e.stopPropagation()
                             },
+                            numMeshes > 1 ? m('.ui-panel.noHeader.field-checkbox', {onclick: () => advanced = !advanced},
+                                m('content.flex',
+                                    m('span.ui-label.label-field', m('i.fa.fa-cogs.warning')),
+                                    m('.ui-checkbox.noSelect.tick', {
+                                            class: advanced ? 'checked' : ''
+                                        }
+                                    ),
+                                    m('span.ui-label.ui-label-field', 'Advanced')
+                                )
+                            ) : null,
+                            [!advanced ?
                             m('content.flex',
                                 m('span.ui-label.label-field.select-label', m('i.fa.fa-compress.warning'), "Triangles"),
                                 m('input.ui-label.range-control', {
@@ -233,11 +258,37 @@ editor.on('attributes:inspect[asset]', function (assets) {
                                         max: maxTriangles
                                     },
                                 )
+                            ) : map(meshLevels, (level,name)=>{
+                                    return m('content.flex',
+                                        m('span.ui-label.label-field.select-label', m('i.fa.fa-compress.warning'), name),
+                                        m('input.ui-label.range-control', {
+                                                type: 'range',
+                                                value: level.currentTriangles,
+                                                oninput: m.withAttr('value', v => level.currentTriangles = +v),
+                                                min: level.minTriangles,
+                                                max: level.maxTriangles
+                                            },
+                                        ),
+                                        m('span.ui-label.small-text', level.currentTriangles)
+                                    )
+                                })],
+                            m('content.flex',
+                                m('span.ui-label.label-field.select-label', m('i.fa.fa-arrows-h.warning'), "Precision"),
+                                m('select.ui-label.select', {
+                                        value: precision,
+                                        onchange: m.withAttr('value', (v) => precision = v)
+                                    },
+                                    m('option', {value: 1000}, "1 mm"),
+                                    m('option', {value: 10000}, "0.1 mm"),
+                                    m('option', {value: 100000}, "0.01 mm"),
+                                )
+                                
                             ),
                             m('.ui-panel.noHeader.buttons',
                                 m('.content',
                                     m('.ui-button.centered-text.full-width', {onclick: runDecimation},
                                         m('i.fa.fa-compress.fa-large'),
+                                        advanced ? "Decimate" :
                                         "Decimate " + Math.floor((1 - currentTriangles / maxTriangles) * 100) + "%"
                                     )
                                 )
