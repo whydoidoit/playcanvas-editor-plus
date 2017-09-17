@@ -123,6 +123,11 @@ e.g. :man@ searches for entities that are called 'man' but will omit 'manual' et
 
 ### History
 
+v1.4.1
+
+* Added per sub mesh settings for decimation as an advanced option
+* Added mesh output precision
+
 v1.4
 
 * Added copy and paste between projects
