@@ -123,6 +123,12 @@ e.g. :man@ searches for entities that are called 'man' but will omit 'manual' et
 
 ### History
 
+
+v1.4.3
+
+* Fixed a bug in baking with no UV2
+* Fixed a bug in decimation where the decimation panel would not appear
+
 v1.4.1
 
 * Added per sub mesh settings for decimation as an advanced option

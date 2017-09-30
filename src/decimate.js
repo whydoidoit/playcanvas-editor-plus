@@ -80,13 +80,17 @@ editor.on('attributes:inspect[asset]', function (assets) {
                 let meshLevels = {}
                 let numMeshes = 0
                 let advanced = false
-                let model = pc.app.assets.get(asset.id)._editorPreviewModel.clone()
+                let model = editor.call('viewport:app').assets.get(asset.id)._editorPreviewModel
                 model.meshInstances.forEach(instance => {
-                    numMeshes++
-                    meshLevels[instance.node.name] = {
-                        maxTriangles: instance.mesh.primitive[0].count,
-                        currentTriangles: instance.mesh.primitive[0].count,
-                        minTriangles: Math.floor((instance.mesh.primitive[0].count) / 5)
+                    try {
+                        meshLevels[instance.node.name] = {
+                            maxTriangles: instance.mesh.primitive[0].count,
+                            currentTriangles: instance.mesh.primitive[0].count,
+                            minTriangles: Math.floor((instance.mesh.primitive[0].count) / 5)
+                        }
+                        numMeshes++
+                    } catch(e) {
+
                     }
                 })
                 async function runDecimation() {
@@ -100,7 +104,7 @@ editor.on('attributes:inspect[asset]', function (assets) {
                         let mc = new MeshCreator
                         let skins = mc.skins
                         modelPlaceholder.node = modelNode;
-                        let model = pc.app.assets.get(asset.id)._editorPreviewModel.clone()
+                        let model = editor.call('viewport:app').assets.get(asset.id)._editorPreviewModel
                         let parent = mc.root
 
                         function recurseScan(node, parent) {
@@ -118,10 +122,12 @@ editor.on('attributes:inspect[asset]', function (assets) {
                             let vertices = mc.createVertices()
                             let node = i.node.$node
                             let instance = mc.createMeshInstance(node, newMesh)
-                            skins.push({
-                                inverseBindMatrices: i.skinInstance.skin.inverseBindPose.map(v => Array.from(v.data).map(round)),
-                                boneNames: i.skinInstance.skin.boneNames
-                            })
+                            if(i.skinInstance && i.skinInstance.skin) {
+                                skins.push({
+                                    inverseBindMatrices: i.skinInstance.skin.inverseBindPose.map(v => Array.from(v.data).map(round)),
+                                    boneNames: i.skinInstance.skin.boneNames
+                                })
+                            }
                             let pos = vertices.position.data
                             let uv = vertices.texCoord0.data
                             let uv1 = vertices.texCoord1.data

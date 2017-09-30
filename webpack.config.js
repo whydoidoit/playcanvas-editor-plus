@@ -1,7 +1,7 @@
 const webpack = require('webpack');
 const path = require('path');
 const BundleAsAFunction = require('./bundle-as-function-webpack-plugin')
-
+console.log("This one")
 module.exports = {
     entry: {
         main: './src/main.js'
@@ -35,8 +35,12 @@ module.exports = {
             exclude: [/node_modules/, "/node_modules"],
             loader: 'babel-loader',
             query: {
-                presets: ['ES2017']
+                presets: ['es2015', 'es2017'],
+                plugins: [
+                    'transform-runtime'
+                ]
             }
+
         }, {
             test: /\.scss$/,
             use: [{
@@ -56,11 +60,15 @@ module.exports = {
         }, {
             test: /\.woff(2)?(\?v=[0-9]\.[0-9]\.[0-9])?$/,
             loader: "url-loader?limit=100000000&mimetype=application/font-woff"
-        },
-            {
-                test: /\.(ttf|eot|svg)(\?v=[0-9]\.[0-9]\.[0-9])?$/,
-                loader: "file-loader"
-            }]
+        }, {
+            test: /\.(ttf|eot|svg)(\?v=[0-9]\.[0-9]\.[0-9])?$/,
+            loader: "file-loader"
+        }, {
+            test: /\.json$/,
+            loader: "json"
+
+        }
+        ]
     }
 };
 
