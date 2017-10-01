@@ -123,6 +123,9 @@ e.g. :man@ searches for entities that are called 'man' but will omit 'manual' et
 
 ### History
 
+v1.4.5
+
+* Fixed a problem with normals being blown by scaling during baking
 
 v1.4.3
 

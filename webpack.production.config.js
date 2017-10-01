@@ -5,7 +5,8 @@ const UglifyJSPlugin = require('uglifyjs-webpack-plugin')
 
 module.exports = {
     entry: {
-        main: './src/main.js'
+        main: './src/main.js',
+        combine: './src/node_modules/mesh-combiner/index.js'
     },
     output: {
         path: path.resolve(__dirname, 'build'),
@@ -51,8 +52,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
             loader: 'babel-loader',
             query: {
                 cacheDirectory: false,
-                presets: ['es2015', 'es2017'],
-                plugins: ['transform-runtime']
+                presets: ['es2015', 'es2017']
             }
         }, {
             test: /\.scss$/,

@@ -1,3 +1,4 @@
+import 'babel-polyfill'
 import 'ui-container'
 import './settings-button'
 import './copy-paste'

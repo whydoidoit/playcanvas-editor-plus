@@ -7,9 +7,12 @@ const Settings = {
         return m('span.ui-button',
             m('a[href="https://ixion.digital"][target="Ixion"]', "IXION"),
             m.trust('&nbsp;'),
+            m.trust('&nbsp;'),
+            m.trust('&nbsp;'),
             m('i.fa.fa-cog', {
                 onclick: showSettings
-            })
+            }),
+            m('a[href="https://blog.ixion.digital/playcanvas-e"][target="Ixion"]', m('i.fa.fa-question-circle')),
         )
     }
 }

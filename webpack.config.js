@@ -4,7 +4,8 @@ const BundleAsAFunction = require('./bundle-as-function-webpack-plugin')
 console.log("This one")
 module.exports = {
     entry: {
-        main: './src/main.js'
+        main: './src/main.js',
+        combine: './src/node_modules/mesh-combiner/index.js'
     },
     output: {
         path: path.resolve(__dirname, 'build'),

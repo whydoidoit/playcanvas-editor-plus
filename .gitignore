@@ -2,7 +2,7 @@
 /build
 *.pem
 production-extension.pem
-
+*.icloud
 production-extension.zip
 
 production-extension 2.zip
