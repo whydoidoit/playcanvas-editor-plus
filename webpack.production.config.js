@@ -52,7 +52,8 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
             loader: 'babel-loader',
             query: {
                 cacheDirectory: false,
-                presets: ['es2015', 'es2017']
+                presets: ['es2015', 'es2017'],
+                plugins: ['transform-runtime']
             }
         }, {
             test: /\.scss$/,
